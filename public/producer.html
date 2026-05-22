@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Giveaway Meter — Producer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Libre+Franklin:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #0a0e14;
+    color: #e6edf3;
+    font-family: 'Libre Franklin', system-ui, sans-serif;
+    min-height: 100%;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 22px 18px 60px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    margin: 0 0 4px;
+    color: #ffd166;
+    letter-spacing: 0.5px;
+  }
+  .sub {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #8d99a6;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    background: #11181f;
+    border: 1px solid #1d2731;
+    border-radius: 14px;
+    padding: 16px 16px 18px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #8d99a6;
+    margin: 0 0 12px;
+  }
+
+  /* status card */
+  .status {
+    background: linear-gradient(155deg, #0f1a1a 0%, #11181f 100%);
+    border: 1px solid #2a3a3a;
+  }
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    text-align: center;
+  }
+  .stat .v {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffd166;
+    line-height: 1;
+  }
+  .stat .l {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #8d99a6;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .barwrap {
+    height: 10px;
+    background: #06080b;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 14px;
+    border: 1px solid #1d2731;
+  }
+  .bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd166, #ff8a3d, #ff3d8a, #b07cff);
+    transition: width 0.4s ease;
+  }
+  .state-tag {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: #1d2731;
+    color: #8d99a6;
+  }
+  .state-tag.urgent { background: #3a1a1a; color: #ff8d8d; }
+  .state-tag.unlocked { background: #3a2e10; color: #ffd166; }
+
+  /* button rows */
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  button {
+    flex: 1 1 0;
+    min-width: 60px;
+    padding: 12px 8px;
+    border: 1px solid #2a3a3a;
+    border-radius: 10px;
+    background: #1a242e;
+    color: #e6edf3;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  button:hover { background: #243240; border-color: #3a4a5a; }
+  button:active { transform: translateY(1px); }
+  button.gold {
+    background: linear-gradient(180deg, #ffd166, #ff8a3d);
+    color: #0a0e14;
+    border-color: transparent;
+  }
+  button.gold:hover { filter: brightness(1.08); }
+  button.danger {
+    background: #2a1818;
+    border-color: #4a2a2a;
+    color: #ff8d8d;
+  }
+  button.danger:hover { background: #3a1f1f; }
+  button.sub-btn {
+    background: #1a242e;
+    color: #8d99a6;
+  }
+
+  .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8d99a6;
+    margin: 14px 0 6px;
+  }
+
+  input[type=text], input[type=number] {
+    width: 100%;
+    padding: 10px 12px;
+    background: #06080b;
+    border: 1px solid #1d2731;
+    border-radius: 8px;
+    color: #e6edf3;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 14px;
+  }
+  input:focus { outline: 1px solid #ffd166; }
+
+  .host-line {
+    background: #06080b;
+    border: 1px dashed #3a4a5a;
+    border-radius: 10px;
+    padding: 14px 14px;
+    font-size: 15px;
+    line-height: 1.45;
+    color: #fff7d6;
+    font-style: italic;
+    min-height: 60px;
+  }
+  .host-eyebrow {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: #ffd166;
+    text-transform: uppercase;
+    font-style: normal;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Giveaway Meter — Producer</h1>
+  <div class="sub">Control panel · second device</div>
+
+  <!-- STATUS -->
+  <div class="card status">
+    <h2>Live state</h2>
+    <div class="status-grid">
+      <div class="stat"><div class="v" id="sClicks">0</div><div class="l">clicks</div></div>
+      <div class="stat"><div class="v" id="sTarget">500</div><div class="l">target</div></div>
+      <div class="stat"><div class="v" id="sRemaining">500</div><div class="l">to unlock</div></div>
+    </div>
+    <div class="barwrap"><div class="bar" id="sBar" style="width: 0%"></div></div>
+    <span class="state-tag" id="sTag">FILLING</span>
+  </div>
+
+  <!-- HOST LINE -->
+  <div class="card">
+    <h2>Host reads this</h2>
+    <div class="host-line">
+      <span class="host-eyebrow">say this on stream →</span>
+      <span id="hostLine">We need 500 more clicks to unlock the free bag giveaway — tap the link.</span>
+    </div>
+  </div>
+
+  <!-- ADD CLICKS -->
+  <div class="card">
+    <h2>Add clicks</h2>
+    <div class="row">
+      <button onclick="addC(1)">+1</button>
+      <button onclick="addC(5)">+5</button>
+      <button onclick="addC(10)">+10</button>
+      <button onclick="addC(25)">+25</button>
+      <button onclick="addC(50)">+50</button>
+      <button onclick="addC(100)">+100</button>
+    </div>
+    <div class="label">Subtract (mistake / over-counted)</div>
+    <div class="row">
+      <button class="sub-btn" onclick="subC(1)">-1</button>
+      <button class="sub-btn" onclick="subC(5)">-5</button>
+      <button class="sub-btn" onclick="subC(10)">-10</button>
+      <button class="sub-btn" onclick="subC(25)">-25</button>
+    </div>
+  </div>
+
+  <!-- TARGET -->
+  <div class="card">
+    <h2>Set target</h2>
+    <div class="row">
+      <button onclick="setT(100)">100</button>
+      <button onclick="setT(250)">250</button>
+      <button onclick="setT(500)">500</button>
+      <button onclick="setT(1000)">1000</button>
+      <button onclick="setT(2000)">2000</button>
+    </div>
+    <div class="label">Custom target</div>
+    <div class="row">
+      <input type="number" id="customTarget" placeholder="e.g. 750" min="1" style="flex: 2 1 0">
+      <button onclick="setCustomT()" style="flex: 1 1 0">SET</button>
+    </div>
+  </div>
+
+  <!-- LABELS -->
+  <div class="card">
+    <h2>Overlay label</h2>
+    <div class="label">Prize name (the headline reads: "20 MORE CLICKS FOR ___")</div>
+    <input type="text" id="prizeInput" placeholder="GIVEAWAY" maxlength="40">
+    <div class="row" style="margin-top: 10px;">
+      <button class="gold" onclick="saveLabels()">SAVE LABEL</button>
+    </div>
+  </div>
+
+  <!-- EMERGENCY -->
+  <div class="card">
+    <h2>Demo / emergency</h2>
+    <div class="row">
+      <button class="gold" onclick="autoDemo()">AUTO-FILL DEMO (5s)</button>
+      <button onclick="forceUnlock()">FORCE UNLOCK NOW</button>
+    </div>
+    <div class="row" style="margin-top: 8px;">
+      <button class="danger" onclick="confirmReset()">RESET METER TO ZERO</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+  var lastState = null;
+
+  function addC(n) { socket.emit("add_clicks", n); }
+  function subC(n) { socket.emit("sub_clicks", n); }
+  function setT(t) { socket.emit("set_target", t); }
+  function setCustomT() {
+    var v = parseInt(document.getElementById("customTarget").value);
+    if (!isNaN(v) && v >= 1) socket.emit("set_target", v);
+  }
+  function autoDemo() { socket.emit("auto_demo"); }
+  function forceUnlock() {
+    if (confirm("Force unlock — this will set the meter to 100% and trigger the unlock state on the overlay. Continue?")) {
+      socket.emit("force_unlock");
+    }
+  }
+  function confirmReset() {
+    if (confirm("Reset meter to zero clicks?")) socket.emit("reset");
+  }
+  function saveLabels() {
+    socket.emit("set_labels", {
+      prizeLabel: document.getElementById("prizeInput").value || "GIVEAWAY"
+    });
+  }
+
+  function updateHostLine(s) {
+    var host = document.getElementById("hostLine");
+    var prize = s.prizeLabel || "giveaway";
+    var prizeLow = prize.toLowerCase();
+
+    if (s.unlocked) {
+      host.textContent = "\"The " + prizeLow + " is UNLOCKED — thank you, this is on you guys. The link is pinned, go grab it.\"";
+    } else if (s.remaining <= 25) {
+      host.textContent = "\"" + s.remaining + " clicks away — that's it, that's all we need. Tap the link right now and the " + prizeLow + " unlocks for everyone watching.\"";
+    } else if (s.fillPct >= 50) {
+      host.textContent = "\"We're more than halfway — " + s.remaining + " clicks to go before the " + prizeLow + " unlocks. Tap the link.\"";
+    } else if (s.fillPct >= 20) {
+      host.textContent = "\"Meter is filling — " + s.remaining + " more clicks until the " + prizeLow + " unlocks. Link is pinned.\"";
+    } else {
+      host.textContent = "\"We need " + s.remaining + " clicks to unlock the " + prizeLow + ". Tap the link in my bio — every click counts.\"";
+    }
+  }
+
+  socket.on("state", function (s) {
+    lastState = s;
+    document.getElementById("sClicks").textContent = s.clicks;
+    document.getElementById("sTarget").textContent = s.target;
+    document.getElementById("sRemaining").textContent = s.remaining;
+    document.getElementById("sBar").style.width = s.fillPct + "%";
+
+    var tag = document.getElementById("sTag");
+    tag.classList.remove("urgent", "unlocked");
+    if (s.unlocked) {
+      tag.textContent = "UNLOCKED";
+      tag.classList.add("unlocked");
+    } else if (s.fillPct >= 85) {
+      tag.textContent = "ALMOST THERE";
+      tag.classList.add("urgent");
+    } else {
+      tag.textContent = "FILLING · " + s.fillPct + "%";
+    }
+
+    // populate label input once on first state if empty
+    var p = document.getElementById("prizeInput");
+    if (!p.value) p.value = s.prizeLabel;
+
+    updateHostLine(s);
+  });
+</script>
+
+</body>
+</html>
