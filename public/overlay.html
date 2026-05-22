@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Giveaway Meter — Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Libre+Franklin:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    background: transparent;
+    overflow: hidden;
+    font-family: 'Libre Franklin', system-ui, sans-serif;
+    color: #fff;
+  }
+
+  /* Horizontal card */
+  .stage {
+    position: absolute;
+    top: 24px; left: 24px;
+    width: 560px;
+    padding: 24px 28px 26px;
+    background: linear-gradient(155deg, #0a0e14 0%, #0f1a1a 60%, #07090c 100%);
+    border-radius: 20px;
+    box-shadow:
+      0 0 0 1px rgba(110, 240, 130, 0.22),
+      0 18px 60px rgba(0, 0, 0, 0.55),
+      0 0 80px rgba(60, 220, 100, 0.18);
+    overflow: hidden;
+  }
+
+  /* Animated rim glow */
+  .stage::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    padding: 2px;
+    background: conic-gradient(
+      from var(--angle, 0deg),
+      #a8ff8a, #4eea5d, #1dbf52, #6dff8e, #e6ffd6, #a8ff8a
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0.6;
+    animation: spin 6s linear infinite;
+    pointer-events: none;
+  }
+  @property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes spin {
+    to { --angle: 360deg; }
+  }
+
+  /* The single text line */
+  .headline {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .headline .num {
+    color: #fff;
+    background: linear-gradient(180deg, #e6ffd6 0%, #a8ff8a 55%, #4eea5d 100%);
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 18px rgba(110, 240, 130, 0.7));
+    display: inline-block;
+    padding: 0 4px;
+    transition: transform 0.25s ease;
+  }
+  .headline .num.bump { animation: bump 0.4s ease; }
+  @keyframes bump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.22); }
+    100% { transform: scale(1); }
+  }
+  .headline .mid {
+    color: #fff;
+    font-family: 'Libre Franklin', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 0 10px;
+    vertical-align: middle;
+    text-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+  }
+  .headline .prize {
+    color: #a8ff8a;
+    text-shadow: 0 0 18px rgba(168, 255, 138, 0.7);
+  }
+
+  /* Horizontal meter */
+  .meter-wrap {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+  }
+  .meter {
+    position: relative;
+    width: 100%;
+    height: 44px;
+    border-radius: 22px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.4)),
+      #06080b;
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+      inset 0 4px 12px rgba(0, 0, 0, 0.7),
+      0 0 32px rgba(110, 240, 130, 0.18);
+    overflow: hidden;
+  }
+
+  /* Tick marks (vertical lines now) */
+  .ticks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+  }
+  .tick {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .tick.major { background: rgba(255, 255, 255, 0.28); width: 2px; }
+
+  /* The fill — fills left to right */
+  .fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 0%;
+    background:
+      linear-gradient(90deg,
+        #0a7a3c 0%,
+        #1dbf52 30%,
+        #4eea5d 58%,
+        #a8ff8a 82%,
+        #e6ffd6 100%);
+    box-shadow:
+      8px 0 24px rgba(110, 240, 130, 0.75),
+      0 0 40px rgba(60, 220, 100, 0.55);
+    transition: width 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+    z-index: 2;
+  }
+  .fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.20) 0px,
+        rgba(255, 255, 255, 0.20) 2px,
+        transparent 2px,
+        transparent 12px
+      );
+    animation: stripe 1.2s linear infinite;
+    mix-blend-mode: overlay;
+  }
+  @keyframes stripe {
+    from { background-position: 0 0; }
+    to { background-position: 24px 0; }
+  }
+
+  /* Meniscus glow at leading (right) edge of fill */
+  .meniscus {
+    position: absolute;
+    top: -4px; bottom: -4px;
+    right: -6px;
+    width: 12px;
+    background: radial-gradient(ellipse at center, rgba(230, 255, 214, 0.95) 0%, rgba(255, 255, 255, 0) 70%);
+    filter: blur(2px);
+    animation: pulseM 1.2s ease-in-out infinite;
+  }
+  @keyframes pulseM {
+    0%, 100% { opacity: 0.65; }
+    50% { opacity: 1; }
+  }
+
+  /* Sparkles rising up from the bar */
+  .sparkle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 8px #fff, 0 0 16px #a8ff8a;
+    animation: rise 1.6s linear infinite;
+    z-index: 3;
+    pointer-events: none;
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) scale(0.8); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+  }
+
+  /* Outer flash when close to unlock */
+  .stage.urgent {
+    animation: urgentPulse 0.7s ease-in-out infinite;
+  }
+  @keyframes urgentPulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(255, 230, 130, 0.6),
+        0 18px 60px rgba(0, 0, 0, 0.55),
+        0 0 80px rgba(255, 200, 80, 0.45);
+    }
+    50% {
+      box-shadow:
+        0 0 0 2px rgba(255, 220, 110, 0.95),
+        0 18px 60px rgba(0, 0, 0, 0.55),
+        0 0 130px rgba(255, 200, 80, 0.9);
+    }
+  }
+
+  /* UNLOCKED state */
+  .stage.unlocked {
+    animation: unlockedGlow 1.2s ease-in-out infinite;
+  }
+  @keyframes unlockedGlow {
+    0%, 100% {
+      box-shadow:
+        0 0 0 2px rgba(168, 255, 138, 0.8),
+        0 18px 60px rgba(0, 0, 0, 0.55),
+        0 0 100px rgba(110, 240, 130, 0.7);
+    }
+    50% {
+      box-shadow:
+        0 0 0 3px rgba(168, 255, 138, 1),
+        0 18px 60px rgba(0, 0, 0, 0.55),
+        0 0 180px rgba(110, 240, 130, 1);
+    }
+  }
+  .stage.unlocked .headline { display: none; }
+  .unlock-line {
+    display: none;
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 22px;
+    background: linear-gradient(90deg, #a8ff8a, #e6ffd6, #4eea5d, #a8ff8a);
+    background-size: 300% 100%;
+    animation: shimmerText 3s linear infinite;
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(168, 255, 138, 0.8));
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  @keyframes shimmerText {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  .stage.unlocked .unlock-line { display: block; }
+
+  /* Confetti canvas */
+  #confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <div class="headline" id="headline">
+    <span class="num" id="num">20</span><span class="mid">MORE CLICKS FOR</span><span class="mid prize" id="prize">GIVEAWAY</span>
+  </div>
+
+  <div class="unlock-line" id="unlockLine">🎉 GIVEAWAY UNLOCKED 🎉</div>
+
+  <div class="meter-wrap">
+    <div class="meter">
+      <div class="fill" id="fill">
+        <div class="meniscus"></div>
+      </div>
+      <div class="ticks">
+        <div class="tick major" style="left: 0%"></div>
+        <div class="tick" style="left: 25%"></div>
+        <div class="tick major" style="left: 50%"></div>
+        <div class="tick" style="left: 75%"></div>
+        <div class="tick major" style="left: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti"></canvas>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+  var stage = document.getElementById("stage");
+  var fill = document.getElementById("fill");
+  var numEl = document.getElementById("num");
+  var prizeEl = document.getElementById("prize");
+  var unlockLine = document.getElementById("unlockLine");
+  var lastRemaining = null;
+  var lastUnlocked = false;
+
+  // sparkles rising from the bar
+  var meter = document.querySelector(".meter");
+  function spawnSparkle() {
+    var pct = parseInt(fill.style.width) || 0;
+    if (pct < 2) return;
+    var meterWidth = meter.offsetWidth;
+    var maxX = (pct / 100) * meterWidth;
+    var s = document.createElement("div");
+    s.className = "sparkle";
+    s.style.left = (Math.random() * maxX) + "px";
+    s.style.top = (8 + Math.random() * 28) + "px";
+    s.style.animationDuration = (1.2 + Math.random() * 1.0) + "s";
+    meter.appendChild(s);
+    setTimeout(function () { s.remove(); }, 2400);
+  }
+  setInterval(function () {
+    if (!stage.classList.contains("unlocked")) {
+      spawnSparkle();
+      var pct = parseInt(fill.style.width) || 0;
+      if (pct > 40) spawnSparkle();
+    }
+  }, 260);
+
+  // confetti
+  var canvas = document.getElementById("confetti");
+  var ctx = canvas.getContext("2d");
+  var pieces = [];
+  function resizeCanvas() {
+    canvas.width = stage.offsetWidth;
+    canvas.height = stage.offsetHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  function burstConfetti() {
+    var colors = ["#a8ff8a", "#4eea5d", "#1dbf52", "#e6ffd6", "#fff", "#ffd166"];
+    for (var i = 0; i < 90; i++) {
+      pieces.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 14,
+        vy: (Math.random() - 1.2) * 10,
+        size: 4 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        life: 0
+      });
+    }
+  }
+  function tickConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (var i = pieces.length - 1; i >= 0; i--) {
+      var p = pieces[i];
+      p.vy += 0.25;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life++;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.5);
+      ctx.restore();
+      if (p.life > 160 || p.y > canvas.height + 30) pieces.splice(i, 1);
+    }
+    requestAnimationFrame(tickConfetti);
+  }
+  tickConfetti();
+
+  socket.on("state", function (s) {
+    fill.style.width = s.fillPct + "%";
+
+    // Prize label — strip any words like "FREE BAG GIVEAWAY" → just use as-is
+    prizeEl.textContent = s.prizeLabel || "GIVEAWAY";
+
+    if (lastRemaining !== null && s.remaining !== lastRemaining) {
+      numEl.classList.remove("bump");
+      void numEl.offsetWidth;
+      numEl.classList.add("bump");
+    }
+    numEl.textContent = s.remaining;
+    lastRemaining = s.remaining;
+
+    // urgent mode when close
+    if (s.fillPct >= 85 && !s.unlocked) {
+      stage.classList.add("urgent");
+    } else {
+      stage.classList.remove("urgent");
+    }
+
+    // unlock-line text dynamic with prize
+    unlockLine.textContent = "🎉 " + (s.prizeLabel || "GIVEAWAY") + " UNLOCKED 🎉";
+
+    if (s.unlocked) {
+      stage.classList.add("unlocked");
+      if (!lastUnlocked) {
+        burstConfetti();
+        setTimeout(burstConfetti, 400);
+        setTimeout(burstConfetti, 900);
+      }
+    } else {
+      stage.classList.remove("unlocked");
+    }
+    lastUnlocked = s.unlocked;
+  });
+</script>
+
+</body>
+</html>
