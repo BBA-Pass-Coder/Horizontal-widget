@@ -254,11 +254,13 @@
 
   <!-- LABELS -->
   <div class="card">
-    <h2>Overlay label</h2>
-    <div class="label">Prize name (the headline reads: "20 MORE CLICKS FOR ___")</div>
+    <h2>Overlay labels</h2>
+    <div class="label">Action word (replaces "CLICKS" — e.g. ORDERS, TAPS, ENTRIES, SHARES)</div>
+    <input type="text" id="actionInput" placeholder="CLICKS" maxlength="20">
+    <div class="label">Prize name (replaces "GIVEAWAY")</div>
     <input type="text" id="prizeInput" placeholder="GIVEAWAY" maxlength="40">
     <div class="row" style="margin-top: 10px;">
-      <button class="gold" onclick="saveLabels()">SAVE LABEL</button>
+      <button class="gold" onclick="saveLabels()">SAVE LABELS</button>
     </div>
   </div>
 
@@ -299,6 +301,7 @@
   }
   function saveLabels() {
     socket.emit("set_labels", {
+      actionLabel: document.getElementById("actionInput").value || "CLICKS",
       prizeLabel: document.getElementById("prizeInput").value || "GIVEAWAY"
     });
   }
@@ -307,17 +310,18 @@
     var host = document.getElementById("hostLine");
     var prize = s.prizeLabel || "giveaway";
     var prizeLow = prize.toLowerCase();
+    var action = (s.actionLabel || "clicks").toLowerCase();
 
     if (s.unlocked) {
       host.textContent = "\"The " + prizeLow + " is UNLOCKED — thank you, this is on you guys. The link is pinned, go grab it.\"";
     } else if (s.remaining <= 25) {
-      host.textContent = "\"" + s.remaining + " clicks away — that's it, that's all we need. Tap the link right now and the " + prizeLow + " unlocks for everyone watching.\"";
+      host.textContent = "\"" + s.remaining + " " + action + " away — that's it, that's all we need. Tap the link right now and the " + prizeLow + " unlocks for everyone watching.\"";
     } else if (s.fillPct >= 50) {
-      host.textContent = "\"We're more than halfway — " + s.remaining + " clicks to go before the " + prizeLow + " unlocks. Tap the link.\"";
+      host.textContent = "\"We're more than halfway — " + s.remaining + " " + action + " to go before the " + prizeLow + " unlocks. Tap the link.\"";
     } else if (s.fillPct >= 20) {
-      host.textContent = "\"Meter is filling — " + s.remaining + " more clicks until the " + prizeLow + " unlocks. Link is pinned.\"";
+      host.textContent = "\"Meter is filling — " + s.remaining + " more " + action + " until the " + prizeLow + " unlocks. Link is pinned.\"";
     } else {
-      host.textContent = "\"We need " + s.remaining + " clicks to unlock the " + prizeLow + ". Tap the link in my bio — every click counts.\"";
+      host.textContent = "\"We need " + s.remaining + " " + action + " to unlock the " + prizeLow + ". Tap the link in my bio — every " + action.replace(/s$/, "") + " counts.\"";
     }
   }
 
@@ -340,8 +344,10 @@
       tag.textContent = "FILLING · " + s.fillPct + "%";
     }
 
-    // populate label input once on first state if empty
+    // populate label inputs once on first state if empty
+    var a = document.getElementById("actionInput");
     var p = document.getElementById("prizeInput");
+    if (!a.value) a.value = s.actionLabel;
     if (!p.value) p.value = s.prizeLabel;
 
     updateHostLine(s);
