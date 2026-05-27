@@ -62,11 +62,12 @@
   .headline {
     position: relative;
     z-index: 2;
-    text-align: center;
-    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
     line-height: 1;
     margin-bottom: 22px;
-    letter-spacing: 0.5px;
     white-space: nowrap;
   }
   .headline .num {
@@ -80,8 +81,6 @@
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 0 18px rgba(110, 240, 130, 0.7));
     display: inline-block;
-    padding: 0 6px;
-    vertical-align: middle;
     transition: transform 0.25s ease;
   }
   .headline .num.bump { animation: bump 0.4s ease; }
@@ -97,8 +96,6 @@
     font-size: 32px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    padding: 0 8px;
-    vertical-align: middle;
     text-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
   }
   .headline .prize {
@@ -295,7 +292,11 @@
 <div class="stage" id="stage">
 
   <div class="headline" id="headline">
-    <span class="num" id="num">20</span><span class="mid">MORE CLICKS FOR</span><span class="mid prize" id="prize">GIVEAWAY</span>
+    <span class="num" id="num">20</span>
+    <span class="mid">MORE</span>
+    <span class="mid" id="action">CLICKS</span>
+    <span class="mid">FOR</span>
+    <span class="mid prize" id="prize">GIVEAWAY</span>
   </div>
 
   <div class="unlock-line" id="unlockLine">🎉 GIVEAWAY UNLOCKED 🎉</div>
@@ -324,6 +325,7 @@
   var stage = document.getElementById("stage");
   var fill = document.getElementById("fill");
   var numEl = document.getElementById("num");
+  var actionEl = document.getElementById("action");
   var prizeEl = document.getElementById("prize");
   var unlockLine = document.getElementById("unlockLine");
   var lastRemaining = null;
@@ -403,7 +405,7 @@
   socket.on("state", function (s) {
     fill.style.width = s.fillPct + "%";
 
-    // Prize label — strip any words like "FREE BAG GIVEAWAY" → just use as-is
+    actionEl.textContent = s.actionLabel || "CLICKS";
     prizeEl.textContent = s.prizeLabel || "GIVEAWAY";
 
     if (lastRemaining !== null && s.remaining !== lastRemaining) {
