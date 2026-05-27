@@ -102,4 +102,7 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("\n  Root Labs Giveaway Meter");
-  console.log("  Overlay:   http://localhost:" +
+  console.log("  Overlay:   http://localhost:" + PORT + "/overlay.html");
+  console.log("  Producer:  http://localhost:" + PORT + "/producer.html");
+  console.log("");
+});
