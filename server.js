@@ -15,6 +15,7 @@ let state = {
   fillPct: 0,
   remaining: 500,
   unlocked: false,
+  actionLabel: "CLICKS",
   prizeLabel: "GIVEAWAY"
 };
 
@@ -76,6 +77,7 @@ io.on("connection", (socket) => {
 
   socket.on("set_labels", (data) => {
     if (data && typeof data === "object") {
+      if (typeof data.actionLabel === "string") state.actionLabel = data.actionLabel.slice(0, 20);
       if (typeof data.prizeLabel === "string") state.prizeLabel = data.prizeLabel.slice(0, 40);
       pushState();
     }
@@ -100,7 +102,4 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("\n  Root Labs Giveaway Meter");
-  console.log("  Overlay:   http://localhost:" + PORT + "/overlay.html");
-  console.log("  Producer:  http://localhost:" + PORT + "/producer.html");
-  console.log("");
-});
+  console.log("  Overlay:   http://localhost:" +
